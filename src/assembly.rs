@@ -6,7 +6,7 @@ pub fn step(instruction: u32, registers: [i32; 31]) -> [i32; 31] {
 
     unsafe {
         asm!(
-        "addi x5, x0, 10",
+        "addi x5, x5, 5",
         // Add "useless" instructions so all registers are used, and the compiler is happy
         "add x1, x1, x0",
         //"add x2, x2, x0", Some registers are not allowed as operands.

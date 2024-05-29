@@ -9,8 +9,8 @@ fn main() {
     esp_idf_svc::log::EspLogger::initialize_default();
 
     let instruction = 0;
-    let mut zeroes = [0; 31];
-
+    let mut zeroes = [1; 31];
+    zeroes[4] = 10;
     let registers = assembly::step(instruction, zeroes);
 
     log::info!("Hello, world! , {registers:?}");
