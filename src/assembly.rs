@@ -11,7 +11,6 @@ pub fn step(_instruction: u32, registers: [i32; 31]) -> [i32; 31] {
     //temporary registers to be used. Except x31 & x5 since we use ourselves, in the worng way really.
     let instruction: [i32; 2] = [
         0b00000000101100110000001100010011, //addi x6, x6, 11
-        //0b00000000101000110000001100010011, //addi x6, x6, 10
         0b00000000000000001000000001100111, //jalr x0, 0(x1)
     ];
 
@@ -33,18 +32,14 @@ pub fn step(_instruction: u32, registers: [i32; 31]) -> [i32; 31] {
                 "lw x1, 0(sp)", // Restore return address
                 "addi sp, sp, 4", //pop!
 
-                // Only the temporaries allow input, looks like we take off two (x29 and x30) from six, pfew.... Maybe
+                // Only the temporaries allow input (for the end-user not the code here), looks like we take off two (x29 and x30) from six, pfew.... Maybe
                 // misuse argument registers? Or something the **caller** should have saved? Check
                 // it.
+                // Not all registers can be used as out... 
                 out("x1") x1,
-                //out("x2") x2, // TODO check if still compile error for these.
-                //out("x3") x3,
-                //out("x4") x4,
                 inout("x5") x5,
                 inout("x6") x6,
                 inout("x7") x7,
-                //out("x8") x8,
-                //out("x9") x9,
                 out("x10") x10,
                 out("x11") x11,
                 out("x12") x12,
