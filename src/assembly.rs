@@ -11,7 +11,8 @@ pub fn step(_instruction: u32, registers: [i32; 31]) -> [i32; 31] {
     //TODO little parser of instruction to generate the number for instruction[0], only allow
     //temporary registers to be used. Except x31 & x5 since we use ourselves, in the worng way really.
     let instruction: [i32; 2] = [
-        0b00000000101000110000001100010011, //addi x6, x6, 10
+        0b00000000101100110000001100010011, //addi x6, x6, 11
+        //0b00000000101000110000001100010011, //addi x6, x6, 10
         0b00000000000000001000000001100111, //jalr x0, 0(x1)
     ];
 
@@ -44,9 +45,9 @@ pub fn step(_instruction: u32, registers: [i32; 31]) -> [i32; 31] {
     // Try RTC Fast memory? Both busses can access.....
     //let something_in_rtc_fast_memory = 0x5000_1000;
     //x28 = something_in_rtc_fast_memory;
-    let diff_data_and_instruction_bus = 0x6F0000;
+    let diff_data_and_instruction_bus = 0x70_0000;
     x29 = diff_data_and_instruction_bus;
-
+    println!("x30 plus offset = {:x}", x30 + diff_data_and_instruction_bus);
     //Al right now we cooking: Illegal instruction :) Maybe my offset?
 
 
