@@ -26,12 +26,39 @@ pub fn step(instruction: u32, registers: [i32; 31]) -> [i32; 31] {
 //    let box_ptr = Box::into_raw(boxed_instr);
 //    println!("boxed {:?}", box_ptr);
 //
-    x30 = instruction_pointer as i32;
+    //x30 = instruction_pointer as i32;
+    //
+    x29 = 0b00000000000000001000000001100111; //jalr x0, 0(x1)
+    x30 = 0b00000000101000110000001100010011; //addi x6, x6, 10
     println!("x30 {:x}", x30);
 
     unsafe {
         asm!(
-        "add x5, x1, x0", //Save return address
+ 
+        // Maybe we can get the PC register in another way. Only numeric labels allowed... Then
+        // says unknow register 2..... Oh needs f or b for forwards or backwards. Needs a register
+        // not a label.. add?
+        "sw x30, 2f(x0)", //Not the right syntax..
+        "jalr x1, 2f(x0)", //Jump to our instructions
+        "2:",
+        "addi x1, x1, 0", //Delete our instructions
+
+        // Looks like we don't have access to the pc register this way, compile error.    
+
+            // Still instruction access fault. Stack looks like I would expect based on this...
+//        "addi sp, sp, -8", //Room for our two instructions
+//        "sw x29, 4(sp)", //Store inststructions in the stack.
+//        "sw x30, 0(sp)",
+//        "jalr x1, 0(sp)", //Jump to our instructions
+//        "addi sp, sp, 8", //Delete our instructions
+//
+        // Looks like we don't have access to the pc register this way, compile error.    
+        //"sw x30, 4(pc)", // overwrite next instruction?
+        //"add x0, x0, x0", //NOP overwritten by previous?
+
+
+        //old tries below    
+        //"add x5, x1, x0", //Save return address
         
 
         // fails but shows crash report with MSTATUS: 0x00001881 bit 11 & 12 should be 0x11 for machine mode. Looks like they are. 
@@ -54,8 +81,8 @@ pub fn step(instruction: u32, registers: [i32; 31]) -> [i32; 31] {
         //MTVAL does show the addr, is x31 MTVAL register? Nah just in T5 now when printing.
         // Oh is it PMP, Physical Memory protection? In that case not easily turned off in M mode
         // even. ("so that even M-mode software cannot change them without a system reset")
-        "jalr x1, 0(x30)", //Set return address in x1z, jump to x31 Our dynamic instruction
-        "add x1, x5, x0", //Set return address back
+        //"jalr x1, 0(x30)", //Set return address in x1z, jump to x31 Our dynamic instruction
+        //"add x1, x5, x0", //Set return address back
         
         // Only the temporaries allow input, looks like we take off two from six, pfew.... Maybe
         // misuse argument registers?
