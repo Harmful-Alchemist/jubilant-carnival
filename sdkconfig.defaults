@@ -10,12 +10,14 @@ CONFIG_ESP_MAIN_TASK_STACK_SIZE=8000
 #CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=n
 
 # Disable PMP? https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/kconfig.html#config-bootloader-region-protection-enable
-CONFIG_BOOTLOADER_REGION_PROTECTION_ENABLE=n
+CONFIG_BOOTLOADER_REGION_PROTECTION_ENABLE=N
 # Maybe this one? I had high hopes...
-CONFIG_ESP_SYSTEM_MEMPROT_FEATURE=n
+# And the docs do suggest it works: https://docs.espressif.com/projects/esp-idf/en/v5.1.4/esp32c3/api-guides/fatal-errors.html#memory-protection-fault
+CONFIG_ESP_SYSTEM_MEMPROT_FEATURE=no
+CONFIG_ESP_SYSTEM_MEMPROT_FEATURE=N
 # try more
-CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT=n
-CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK=n
+CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT=N
+CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK=N
 # also no but flash nothing in early memory regions....
 #
 #
@@ -24,7 +26,7 @@ CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK=n
 #need cargo clean... No error tho....
 CONFIG_ESP_SYSTEM_PANIC_PRINT_HALT=y
 
-
+# also not
 CONFIG_COMPILER_STACK_CHECK_MODE_NONE=y
 # Prolly not:
 CONFIG_FATFS_FS_LOCK=0
