@@ -26,22 +26,28 @@ pub fn step(instruction: u32, registers: [i32; 31]) -> [i32; 31] {
 //    let box_ptr = Box::into_raw(boxed_instr);
 //    println!("boxed {:?}", box_ptr);
 //
-    //x30 = instruction_pointer as i32;
+    x30 = instruction_pointer as i32;
     //
-    x29 = 0b00000000000000001000000001100111; //jalr x0, 0(x1)
-    x30 = 0b00000000101000110000001100010011; //addi x6, x6, 10
+    //x29 = 0b00000000000000001000000001100111; //jalr x0, 0(x1)
+    //x30 = 0b00000000101000110000001100010011; //addi x6, x6, 10
     println!("x30 {:x}", x30);
 
     unsafe {
         asm!(
  
+
+        "add x5, x1, x0",
+        "jalr x1, 0(x30)",
+        "add x1, x5, x0",
+
+
         // Maybe we can get the PC register in another way. Only numeric labels allowed... Then
         // says unknow register 2..... Oh needs f or b for forwards or backwards. Needs a register
         // not a label.. add?
-        "sw x30, 2f(x0)", //Not the right syntax..
-        "jalr x1, 2f(x0)", //Jump to our instructions
-        "2:",
-        "addi x1, x1, 0", //Delete our instructions
+ //       "sw x30, 2f(x0)", //Not the right syntax..
+   //     "jalr x1, 2f(x0)", //Jump to our instructions
+     //   "2:",
+       // "addi x1, x1, 0", //Delete our instructions
 
         // Looks like we don't have access to the pc register this way, compile error.    
 

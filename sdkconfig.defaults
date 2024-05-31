@@ -10,7 +10,7 @@ CONFIG_ESP_MAIN_TASK_STACK_SIZE=8000
 #CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=n
 
 # Disable PMP? https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/kconfig.html#config-bootloader-region-protection-enable
-CONFIG_BOOTLOADER_REGION_PROTECTION_ENABLE=no
+CONFIG_BOOTLOADER_REGION_PROTECTION_ENABLE=n
 # Maybe this one? I had high hopes...
 CONFIG_ESP_SYSTEM_MEMPROT_FEATURE=n
 # try more
@@ -22,3 +22,9 @@ CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK=n
 #do we even look at this file????
 #maybe trigger error?
 #need cargo clean... No error tho....
+CONFIG_ESP_SYSTEM_PANIC_PRINT_HALT=y
+
+
+CONFIG_COMPILER_STACK_CHECK_MODE_NONE=y
+# Prolly not:
+CONFIG_FATFS_FS_LOCK=0
