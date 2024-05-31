@@ -8,3 +8,17 @@ CONFIG_ESP_MAIN_TASK_STACK_SIZE=8000
 # Workaround for https://github.com/espressif/esp-idf/issues/7631
 #CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=n
 #CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=n
+
+# Disable PMP? https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/kconfig.html#config-bootloader-region-protection-enable
+CONFIG_BOOTLOADER_REGION_PROTECTION_ENABLE=no
+# Maybe this one? I had high hopes...
+CONFIG_ESP_SYSTEM_MEMPROT_FEATURE=n
+# try more
+CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT=n
+CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK=n
+# also no but flash nothing in early memory regions....
+#
+#
+#do we even look at this file????
+#maybe trigger error?
+#need cargo clean... No error tho....

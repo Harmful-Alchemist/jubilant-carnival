@@ -18,24 +18,45 @@ pub fn step(instruction: u32, registers: [i32; 31]) -> [i32; 31] {
     let instruction_pointer: *const [u32; 2] = &instruction;
     println!("instruction pointer {:?}", instruction_pointer);
 
-    let testing_second_instruction_pointer: *const u32 = &instruction[1];
-    println!("Points to second instruction? {:?}", testing_second_instruction_pointer);
-
-    //Maybe the problem is they are on the stack and it fucks things?
-    let boxed_instr = Box::new(instruction.clone());
-    let box_ptr = Box::into_raw(boxed_instr);
-    println!("boxed {:?}", box_ptr);
-
-    x31 = instruction_pointer as i32;
-    println!("x31 {:x}", x31);
+//    let testing_second_instruction_pointer: *const u32 = &instruction[1];
+//    println!("Points to second instruction? {:?}", testing_second_instruction_pointer);
+//
+//    //Maybe the problem is they are on the stack and it fucks things?
+//    let boxed_instr = Box::new(instruction.clone());
+//    let box_ptr = Box::into_raw(boxed_instr);
+//    println!("boxed {:?}", box_ptr);
+//
+    x30 = instruction_pointer as i32;
+    println!("x30 {:x}", x30);
 
     unsafe {
         asm!(
         "add x5, x1, x0", //Save return address
-        "lw x30, 0(x31)", //TODO remove now retrieve word see, if is instruction[0].... ehm
+        
+
+        // fails but shows crash report with MSTATUS: 0x00001881 bit 11 & 12 should be 0x11 for machine mode. Looks like they are. 
+        // So says: https://www.espressif.com/sites/default/files/documentation/esp32-c3_technical_reference_manual_en.pdf
+        // error was: Guru Meditation Error: Core  0 panic'ed (Load access fault). Exception was unhandled.
+        //"addi x28, x0, 0x300",
+        //"lw x29, 0(x28)", // Read mstatus register of esp32 c3 0x300 = 0d768
+        
+
+        //"addi x30, x0, 0x3A0", //pmpcfg0 nope trapped
+        //"lw x31, 0(x30)",
+
+
+        //"la x29, MSTATUS", Linker (ld) error
+
+        //"lw x30, 0(x31)", //TODO remove now retrieve word see, if is instruction[0].... ehm
                           //yes..... it is, wtf?
-        //TODO error now"jalr x1, 0(x31)", //Set return address in x1, jump to x31 Our dynamic instruction
+
+        //Guru Meditation Error: Core  0 panic'ed (Instruction access fault). Exception was unhandled.
+        //MTVAL does show the addr, is x31 MTVAL register? Nah just in T5 now when printing.
+        // Oh is it PMP, Physical Memory protection? In that case not easily turned off in M mode
+        // even. ("so that even M-mode software cannot change them without a system reset")
+        "jalr x1, 0(x30)", //Set return address in x1z, jump to x31 Our dynamic instruction
         "add x1, x5, x0", //Set return address back
+        
         // Only the temporaries allow input, looks like we take off two from six, pfew.... Maybe
         // misuse argument registers?
         out("x1") x1,
@@ -69,6 +90,8 @@ pub fn step(instruction: u32, registers: [i32; 31]) -> [i32; 31] {
         inout("x29") x29,
         inout("x30") x30,
         inout("x31") x31,
+
+        //out("pmpcfg0") pmpcfg0, hmm nope unknown
         )
     }
 
