@@ -1,5 +1,4 @@
 use std::arch::asm;
-//use std::boxed::Box;
 
 pub fn step(_instruction: u32, registers: [i32; 31]) -> [i32; 31] {
     #[allow(unused_mut)]
@@ -17,118 +16,28 @@ pub fn step(_instruction: u32, registers: [i32; 31]) -> [i32; 31] {
     ];
 
     let instruction_pointer: *const [i32; 2] = &instruction;
-    println!("instruction pointer {:?}", instruction_pointer);
-
-    //    let testing_second_instruction_pointer: *const u32 = &instruction[1];
-    //    println!("Points to second instruction? {:?}", testing_second_instruction_pointer);
-    //
-    //    //Maybe the problem is they are on the stack and it fucks things?
-    //    let boxed_instr = Box::new(instruction.clone());
-    //    let box_ptr = Box::into_raw(boxed_instr);
-    //    println!("boxed {:?}", box_ptr);
-    //
-
-    //let starting_pc_release_mode = 0x420001e8;
-    //x30 = starting_pc_release_mode;
-    //x31 = instruction[0];
     x30 = instruction_pointer as i32;
 
-    //x29 = 0b00000000000000001000000001100111; //jalr x0, 0(x1)
-    //x30 = 0b00000000101000110000001100010011; //addi x6, x6, 10
-    println!("x30 {:x}", x30);
-
-    // Oh hmm DRAM vs IRMA https://www.espressif.com/sites/default/files/documentation/esp32-c3_technical_reference_manual_en.pdf#sysmem
-    // Store access fault still, but sdkconfig has memprot off...... Is sdkconfig.defaults the
-    // wrong place?
-    //    let middle_ish_of_iram_i_hope = 0x41000000;
-    //    x28 = middle_ish_of_iram_i_hope;
-    // Try RTC Fast memory? Both busses can access.....
-    //let something_in_rtc_fast_memory = 0x5000_1000;
-    //x28 = something_in_rtc_fast_memory;
+    // Oh hmm DRAM vs IRAM https://www.espressif.com/sites/default/files/documentation/esp32-c3_technical_reference_manual_en.pdf#sysmem
     let diff_data_and_instruction_bus = 0x70_0000;
     x29 = diff_data_and_instruction_bus;
-    println!("x30 plus offset = {:x}", x30 + diff_data_and_instruction_bus);
-    //Al right now we cooking: Illegal instruction :) Maybe my offset?
-
-
 
     unsafe {
         asm!(
-                    // Of course store access fault
-                    //"sw x31, 4(x30)", // Try to overwrite next instruction.
-                    //"add x0,x0, x0", //NOP to overwrite.
-
-                    //"addi x29, x0, 1", //0x10000
-                  //  "slli x29, x29, 16",
-                   // "lw x31, 2047(x0)",
-                
-                
-               // "sw x30, 0(x28)", // Store instructions in middle(-ish) of IRAM 
-               // "sw x29, 4(x28)",
-               // "add x5, x1, x0",
-               // "jalr x1, 0(x30)",
-               // "add x1, x5, x0",
-        
-
-                "add x5, x1, x0",
+                "addi sp, sp, -4", // Add space on stack
+                "sw x1, 0(sp)", // Store return address on stack
+                "add x5, x1, x0", // Save return address 
                 "add x30, x30, x29", //Up the data bus known address to get the shadowed
                                      //instruction bus address.
                 "jalr x1, 0(x30)",
-                "add x1, x5, x0",
-                
-                // Maybe we can get the PC register in another way. Only numeric labels allowed... Then
-                // says unknow register 2..... Oh needs f or b for forwards or backwards. Needs a register
-                // not a label.. add?
-         //       "sw x30, 2f(x0)", //Not the right syntax..
-           //     "jalr x1, 2f(x0)", //Jump to our instructions
-             //   "2:",
-               // "addi x1, x1, 0", //Delete our instructions
+                "lw x1, 0(sp)", // Restore return address
+                "addi sp, sp, 4", //pop!
 
-                // Looks like we don't have access to the pc register this way, compile error.
-
-                    // Still instruction access fault. Stack looks like I would expect based on this...
-               // "addi sp, sp, -8", //Room for our two instructions
-               // "sw x29, 4(sp)", //Store inststructions in the stack.
-               // "sw x30, 0(sp)",
-               // "jalr x1, 0(sp)", //Jump to our instructions
-               // "addi sp, sp, 8", //Delete our instructions
-
-                // Looks like we don't have access to the pc register this way, compile error.
-                //"sw x30, 4(pc)", // overwrite next instruction?
-                //"add x0, x0, x0", //NOP overwritten by previous?
-
-
-                //old tries below
-                //"add x5, x1, x0", //Save return address
-
-
-                // fails but shows crash report with MSTATUS: 0x00001881 bit 11 & 12 should be 0x11 for machine mode. Looks like they are.
-                // So says: https://www.espressif.com/sites/default/files/documentation/esp32-c3_technical_reference_manual_en.pdf
-                // error was: Guru Meditation Error: Core  0 panic'ed (Load access fault). Exception was unhandled.
-                //"addi x28, x0, 0x300",
-                //"lw x29, 0(x28)", // Read mstatus register of esp32 c3 0x300 = 0d768
-
-
-                //"addi x30, x0, 0x3A0", //pmpcfg0 nope trapped
-                //"lw x31, 0(x30)",
-
-
-                //"la x29, MSTATUS", Linker (ld) error
-
-                //"lw x30, 0(x31)", //TODO remove now retrieve word see, if is instruction[0].... ehm
-                                  //yes..... it is, wtf?
-
-                //Guru Meditation Error: Core  0 panic'ed (Instruction access fault). Exception was unhandled.
-                //MTVAL does show the addr, is x31 MTVAL register? Nah just in T5 now when printing.
-                // Oh is it PMP, Physical Memory protection? In that case not easily turned off in M mode
-                // even. ("so that even M-mode software cannot change them without a system reset")
-                //"jalr x1, 0(x30)", //Set return address in x1z, jump to x31 Our dynamic instruction
-                //"add x1, x5, x0", //Set return address back
-
-                // Only the temporaries allow input, looks like we take off two from six, pfew.... Maybe
-                // misuse argument registers?
+                // Only the temporaries allow input, looks like we take off two (x29 and x30) from six, pfew.... Maybe
+                // misuse argument registers? Or something the **caller** should have saved? Check
+                // it.
                 out("x1") x1,
-                //out("x2") x2,
+                //out("x2") x2, // TODO check if still compile error for these.
                 //out("x3") x3,
                 //out("x4") x4,
                 inout("x5") x5,
@@ -158,8 +67,6 @@ pub fn step(_instruction: u32, registers: [i32; 31]) -> [i32; 31] {
                 inout("x29") x29,
                 inout("x30") x30,
                 inout("x31") x31,
-
-                //out("pmpcfg0") pmpcfg0, hmm nope unknown
                 )
     }
 
