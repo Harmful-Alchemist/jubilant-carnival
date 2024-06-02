@@ -12,12 +12,6 @@ fn main() {
     // Bind the log crate to the ESP Logging facilities
     esp_idf_svc::log::EspLogger::initialize_default();
 
-    // let instruction = 0;
-    // let mut zeroes = [1; 31];
-    // zeroes[4] = 10;
-    // let registers = assembly::step(instruction, zeroes);
-
-    // log::info!("Hello, world! , {registers:?}");
     let program = vec!["addi x31, x31, 1", "add x31, x31, x31"];
 
     let interpreter = Interpreter::new(program);
