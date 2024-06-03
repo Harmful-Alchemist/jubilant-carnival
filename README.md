@@ -9,4 +9,4 @@ Supported instrutions are add, addi and blt. Branching instructions are not exec
 It's a mess, don't take inspiration from it, it's just to hook everything up.
 
 ### Demo
-![Example of the executor in operation](demo.mp4)
+![Example of the executor in operation](demo.gif)
