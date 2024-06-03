@@ -178,9 +178,10 @@ impl Instruction {
             )
             .unwrap(), //TODO bubble errors or we know parsed etc. here.
             I => {
+                let rs2_or_imm = rs2_or_imm & 0xFFF; //Take only the last 12 bits.
                 let bin_str =
                     &format!("{rs2_or_imm:012b}{rs1:05b}{funct3:03b}{rd:05b}{opcode:07b}");
-                i32::from_str_radix(bin_str, 2).unwrap()
+                u32::from_str_radix(bin_str, 2).unwrap() as i32
             }
         }
     }
@@ -210,10 +211,10 @@ pub struct Interpreter {
 }
 
 impl Interpreter {
-    pub fn new(in_program: Vec<&str>) -> Result<Self, String> {
+    pub fn new(in_program: Vec<String>) -> Result<Self, String> {
         let mut program = Vec::new();
         for (i, line) in in_program.into_iter().enumerate() {
-            match Instruction::parse(line) {
+            match Instruction::parse(&line) {
                 Ok(instruction) => program.push(instruction),
                 Err(e) => return Err(format!("Error on line {i}: {e}")),
             }
@@ -236,9 +237,13 @@ impl Interpreter {
             Add | AddI => self.real_step(instruction.to_code()),
             Blt => {
                 if let Offset(n) = instruction.offset_or_rs2
-                    && self.registers(&instruction.rd) < self.registers(&instruction.rs1)
+                    && self.registers(&instruction.rd) < self.registers(&instruction.rs1) + 1
                 {
-                    self.line = (self.line as i64 - n as i64) as usize;
+                    //let n = if n < 0 { n - 1 } else { n }; //Have to subtract current line too.
+                    self.line = (self.line as i64 + n as i64) as usize;
+                    //if self.line >= self.program.len() {
+                    //    return None;
+                    //}
                     return Some(());
                 }
             }
@@ -282,7 +287,6 @@ impl Interpreter {
             asm!(
             "addi sp, sp, -4", // Add space on stack
             "sw x1, 0(sp)", // Store return address on stack
-            "add x5, x1, x0", // Save return address
             "add x30, x30, x29", //Up the data bus known address to get the shadowed
                                  //instruction bus address.
             "jalr x1, 0(x30)",

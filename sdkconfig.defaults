@@ -24,7 +24,7 @@ CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK=N
 #do we even look at this file????
 #maybe trigger error?
 #need cargo clean... No error tho....
-CONFIG_ESP_SYSTEM_PANIC_PRINT_HALT=y
+#CONFIG_ESP_SYSTEM_PANIC_PRINT_HALT=y
 
 # also not
 CONFIG_COMPILER_STACK_CHECK_MODE_NONE=y
